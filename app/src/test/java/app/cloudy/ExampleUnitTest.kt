@@ -1,4 +1,4 @@
-package com.example.cloudy
+package app.cloudy
 
 import org.junit.Test
 
