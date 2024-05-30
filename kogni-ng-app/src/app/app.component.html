@@ -1,0 +1,29 @@
+<div style="padding: 10px">
+
+  <div class="header-div">
+
+    <img src="assets/geoguessr.webp" class="logo-icon">
+
+    <h1 class="header">GeoGuessr Captcha</h1>
+
+    <img src="assets/captcha.png" class="logo-icon">
+
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <mat-stepper [linear]="true" #stepper>
+    <mat-step label="Zone">
+      <form>
+        <app-captcha-select></app-captcha-select>
+      </form>
+    </mat-step>
+    <mat-step label="Continent">
+      <form>
+      </form>
+    </mat-step>
+    <mat-step label="Country">
+      <p>You are now done.</p>
+    </mat-step>
+  </mat-stepper>
+</div>

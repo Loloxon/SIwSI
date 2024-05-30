@@ -1,0 +1,26 @@
+::ng-deep .mdc-checkbox {
+  display: none !important;
+}
+
+.checkbox-button {
+  border: 3px solid #dadada;
+  border-radius: 0;
+  margin: 10px;
+  width: 220px;
+  height: 220px;
+}
+
+.image {
+  width: 200px;
+  height: 200px;
+  margin: 10px;
+}
+
+::ng-deep .mdc-form-field>label {
+  padding: 0 !important;
+}
+
+.checkbox-selected {
+  border: 3px solid #673ab7;
+  background-color: #c3afea;
+}
