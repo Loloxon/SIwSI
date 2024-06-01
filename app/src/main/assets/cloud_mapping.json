@@ -1,0 +1,206 @@
+{
+  "cloud_types": [
+    {
+      "id": 0,
+      "name": "Cirrus",
+      "type": "High Cloud",
+      "description": "Cirrus clouds are thin, wispy clouds found at high altitudes, often indicating fair weather but can also signal a change in the weather."
+    },
+    {
+      "id": 1,
+      "name": "Cirrostratus",
+      "type": "High Cloud",
+      "description": "Cirrostratus clouds are thin, ice-crystal clouds covering the sky, often creating a halo around the sun or moon and usually indicating an approaching warm front."
+    },
+    {
+      "id": 2,
+      "name": "Cirrocumulus",
+      "type": "High Cloud",
+      "description": "Cirrocumulus clouds are small, white patches of clouds often arranged in rows at high altitudes, resembling ripples or a mackerel sky, typically indicating fair but cold weather."
+    },
+    {
+      "id": 3,
+      "name": "Altostratus",
+      "type": "Medium Cloud",
+      "description": "Altostratus clouds are gray or blue-gray clouds that often cover the entire sky at mid-altitudes, typically indicating continuous and widespread precipitation."
+    },
+    {
+      "id": 4,
+      "name": "Altocumulus",
+      "type": "Medium Cloud",
+      "description": "Altocumulus clouds are white or gray clouds forming patches or layers with a wavy appearance at mid-altitudes, often indicating a change in the weather."
+    },
+    {
+      "id": 5,
+      "name": "Stratus",
+      "type": "Low Cloud",
+      "description": "Stratus clouds are low-level, uniform, grayish clouds that often cover the entire sky like a blanket, creating dull or overcast weather conditions and sometimes producing light mist or drizzle."
+    },
+    {
+      "id": 6,
+      "name": "Stratocumulus",
+      "type": "Low Cloud",
+      "description": "Stratocumulus clouds are large, dark, rounded masses often covering the entire sky at low to mid-levels, typically appearing in a lumpy, honeycomb pattern, bringing cooler and overcast weather conditions, but rarely precipitating."
+    },
+    {
+      "id": 7,
+      "name": "Nimbostratus",
+      "type": "Low Cloud",
+      "description": "Nimbostratus clouds are dark, gray, low-level clouds extending over a wide area, often associated with continuous light to moderate rainfall or snowfall, distinctly lacking in the well-defined structure and towering heights found in typical storm clouds."
+    },
+    {
+      "id": 8,
+      "name": "Cumulus",
+      "type": "Cloud With Vertical Mobility",
+      "description": "Cumulus clouds are fluffy, cotton-like formations that develop vertically, commonly visible at low altitudes, known for their puffy, 'cauliflower' appearance, and often indicate fair weather, but can develop into larger storm systems."
+    },
+    {
+      "id": 9,
+      "name": "Cumulonimbus",
+      "type": "Cloud With Vertical Mobility",
+      "description": "Cumulonimbus clouds are large, towering vertical clouds associated with powerful thunderstorms, identifiable by their anvil-shaped tops at high altitudes, typically leading to heavy rain, lightning, thunder, hail, and even tornadoes."
+    }
+  ],
+  "weather_prediction_map": [
+    {
+      "season": "winter",
+      "cloud_id": 0,
+      "weather_prediction": "Snow",
+      "weather_description": "A warm front is approaching, potentially leading to precipitation such as snow.",
+      "image_path": "../"
+    },
+    {
+      "season": "summer",
+      "cloud_id": 0,
+      "weather_prediction": "Fair weather",
+      "weather_description": "Fair weather will continue, though they can also precede a change, such as an approaching thunderstorm or frontal system.",
+      "image_path": "../"
+    },
+    {
+      "season": "winter",
+      "cloud_id": 1,
+      "weather_prediction": "Snow",
+      "weather_description": "An impending snowstorm or significant precipitation.",
+      "image_path": "../"
+    },
+    {
+      "season": "summer",
+      "cloud_id": 1,
+      "weather_prediction": "Rain / Thunderstorm",
+      "weather_description": "Rain or thunderstorms as a warm front moves in.",
+      "image_path": "../"
+    },
+    {
+      "season": "winter",
+      "cloud_id": 2,
+      "weather_prediction": "Cold",
+      "weather_description": "A period of cold but stable weather, possibly followed by a weather front bringing precipitation",
+      "image_path": "../"
+    },
+    {
+      "season": "summer",
+      "cloud_id": 2,
+      "weather_prediction": "Fair weather / Thunderstorm",
+      "weather_description": "They can indicate fair weather but might also precede a change, such as thunderstorms or a frontal system.",
+      "image_path": "../"
+    },
+    {
+      "season": "winter",
+      "cloud_id": 3,
+      "weather_prediction": "Snow / Windy",
+      "weather_description": "Steady snow or a mix of wintry precipitation.",
+      "image_path": "../"
+    },
+    {
+      "season": "summer",
+      "cloud_id": 3,
+      "weather_prediction": "Rain",
+      "weather_description": "Continuous rain or showers, potentially leading to cooler temperatures.",
+      "image_path": "../"
+    },
+    {
+      "season": "winter",
+      "cloud_id": 4,
+      "weather_prediction": "Cold",
+      "weather_description": "A cold front, bringing colder temperatures and possibly snow.",
+      "image_path": "../"
+    },
+    {
+      "season": "summer",
+      "cloud_id": 4,
+      "weather_prediction": "Thunderstorms",
+      "weather_description": "Thunderstorms or a shift to cooler, wetter weather.",
+      "image_path": "../"
+    },
+    {
+      "season": "winter",
+      "cloud_id": 5,
+      "weather_prediction": "Light snow",
+      "weather_description": "Light snow that may be accompanied by drizzle.",
+      "image_path": "../"
+    },
+    {
+      "season": "summer",
+      "cloud_id": 5,
+      "weather_prediction": "Drizzle",
+      "weather_description": "Drizzle with a possibility of light mist.",
+      "image_path": "../"
+    },
+    {
+      "season": "winter",
+      "cloud_id": 6,
+      "weather_prediction": "Overcast conditions",
+      "weather_description": "Overcast conditions, usually not usually associated with any significant precipitation.",
+      "image_path": "../"
+    },
+    {
+      "season": "summer",
+      "cloud_id": 6,
+      "weather_prediction": "Overcast conditions",
+      "weather_description": "Overcast conditions, usually not usually associated with any significant precipitation.",
+      "image_path": "../"
+    },
+    {
+      "season": "winter",
+      "cloud_id": 7,
+      "weather_prediction": "Snow",
+      "weather_description": "Continuous, though typically light to moderate snow.",
+      "image_path": "../"
+    },
+    {
+      "season": "summer",
+      "cloud_id": 7,
+      "weather_prediction": "Rain",
+      "weather_description": "Continuous, though typically light to moderate rain.",
+      "image_path": "../"
+    },
+    {
+      "season": "winter",
+      "cloud_id": 8,
+      "weather_prediction": "Sunny",
+      "weather_description": "Fair, sunny weather.",
+      "image_path": "../"
+    },
+    {
+      "season": "summer",
+      "cloud_id": 8,
+      "weather_prediction": "Sunny",
+      "weather_description": "Fair, sunny weather.",
+      "image_path": "../"
+    },
+    {
+      "season": "winter",
+      "cloud_id": 9,
+      "weather_prediction": "Thunderstorm",
+      "weather_description": "Thunderstorm with a possible heavy rain.",
+      "image_path": "../"
+    },
+    {
+      "season": "summer",
+      "cloud_id": 9,
+      "weather_prediction": "Hail storm",
+      "weather_description": "Hail storm that may be accompanied by tornadoes.",
+      "image_path": "../"
+    }
+  ]
+}
