@@ -32,4 +32,4 @@ transport-runtime = { group = "com.google.android.datatransport", name = "transp
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-
+chaquopy-python = { id = "com.chaquo.python", version = "15.0.1" }

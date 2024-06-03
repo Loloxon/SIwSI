@@ -16,8 +16,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import app.cloudy.Screens
 
@@ -46,6 +48,8 @@ fun ShowResult(result: String) {
         Text(
             text = result,
             textAlign = TextAlign.Center,
+            fontSize = 24.sp,  // Set the desired font size here
+            fontWeight = FontWeight.Bold  // Make the text bold
         )
     }
 }

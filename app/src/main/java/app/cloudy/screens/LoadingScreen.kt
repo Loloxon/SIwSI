@@ -1,8 +1,10 @@
 package app.cloudy.screens
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.MediaStore
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,8 +23,16 @@ import app.cloudy.Screens
 import kotlinx.coroutines.delay
 import org.json.JSONArray
 import org.json.JSONObject
+import org.pytorch.IValue
+import org.pytorch.Module
+import org.pytorch.Tensor
 import java.io.BufferedReader
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.io.InputStreamReader
+import java.nio.FloatBuffer
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 
@@ -52,21 +62,102 @@ suspend fun asyncPredict(
     result: MutableState<String>,
 ) {
 
-    var date = LocalDateTime.now()
-    print(imageUri)
+    val date = LocalDateTime.now()
     val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
-    print(bitmap)
+    val model = loadModelFromAssets(context, "model_final.pt")
 
-    var cloudName = "Stratus"
-    val weather_prediction = getWeatherPrediction(cloudName, context)
+    // Preprocess the image
+    val tensor = preprocessImage(bitmap)
+
+    // Run the model
+    val outputTensor = model.forward(IValue.from(tensor)).toTensor()
+    val scores = outputTensor.dataAsFloatArray
+
+    val prediction = postprocessOutput(scores)
 
 
-    delay(100)
-    result.value = "result: " + date + "\n" + weather_prediction
+    print(outputTensor)
+    print(scores)
+    val cloudName = prediction
+//    val cloudName = "Stratus"
+    val weatherPrediction = getWeatherPrediction(cloudName, date, context)
+
+    delay(2000)
+    result.value = "Recognised cloud is:\n $prediction\n Weather forecast:\n $weatherPrediction"
     navController.navigate(Screens.Result.name)
 }
 
-fun getWeatherPrediction(cloudName: String, context: Context): String {
+fun preprocessImage(bitmap: Bitmap): Tensor {
+    val width = bitmap.width
+    val height = bitmap.height
+    val floatBuffer = FloatBuffer.allocate(3 * width * height)
+
+    val pixels = IntArray(width * height)
+    bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+
+    for (pixel in pixels) {
+        val r = (pixel shr 16 and 0xFF) / 255.0f
+        val g = (pixel shr 8 and 0xFF) / 255.0f
+        val b = (pixel and 0xFF) / 255.0f
+        floatBuffer.put(r)
+        floatBuffer.put(g)
+        floatBuffer.put(b)
+    }
+
+    val shape = longArrayOf(1, 3, height.toLong(), width.toLong())
+    return Tensor.fromBlob(floatBuffer.array(), shape)
+}
+
+fun postprocessOutput(scores: FloatArray): String {
+    val cloudTypes = arrayOf(
+        "Cirrus",
+        "Cirrostratus",
+        "Cirrocumulus",
+        "Altocumulus",
+        "Altostratus",
+        "Cumulus",
+        "Cumulonimbus",
+        "Nimbostratus",
+        "Stratocumulus",
+        "Stratus"
+    )
+
+    var maxValue = scores[0]
+    var maxIndex = 0
+
+    for (i in scores.indices) {
+        if (scores[i] > maxValue) {
+            maxValue = scores[i]
+            maxIndex = i
+        }
+    }
+
+    var cloudName = cloudTypes[maxIndex%10]
+
+
+    return cloudName
+}
+
+fun loadModelFromAssets(context: Context, modelFilePath: String): Module {
+    return Module.load(assetFilePath(context, modelFilePath))
+}
+fun assetFilePath(context: Context, assetName: String): String {
+    val file = File(context.filesDir, assetName)
+    context.assets.open(assetName).use { inputStream ->
+        FileOutputStream(file).use { outputStream ->
+            val buffer = ByteArray(4 * 1024)
+            var read: Int
+            while (inputStream.read(buffer).also { read = it } != -1) {
+                outputStream.write(buffer, 0, read)
+            }
+            outputStream.flush()
+        }
+    }
+    return file.absolutePath
+}
+
+
+fun getWeatherPrediction(cloudName: String, date: LocalDateTime, context: Context): String {
     val cloudMapping = loadJSONFromAsset(context, "cloud_mapping.json")
     var cloudMappingMap = mutableMapOf<String, Any>()
     if (cloudMapping != null) {
@@ -91,6 +182,14 @@ fun getWeatherPrediction(cloudName: String, context: Context): String {
     }
 
     val weather_prediction_map: JSONArray = cloudMappingMap["weather_prediction_map"] as JSONArray
+    date.monthValue
+    val season: String = if(date.monthValue<5){
+        "winter"
+    } else if(date.monthValue<11){
+        "summer"
+    } else{
+        "winter"
+    }
     var weather_prediction = "none"
     var weather_description = "none"
     var image_path = "none"
@@ -98,7 +197,7 @@ fun getWeatherPrediction(cloudName: String, context: Context): String {
     for (i in 0..<weather_prediction_map.length()) {
         val weather = (weather_prediction_map[i] as JSONObject)
 
-        if (weather.get("cloud_id") == cloud_id) {
+        if (weather.get("cloud_id") == cloud_id && weather.get("season") == season) {
             weather_prediction = weather.get("weather_prediction").toString()
             weather_description = weather.get("weather_description").toString()
             image_path = weather.get("image_path").toString()
@@ -106,7 +205,8 @@ fun getWeatherPrediction(cloudName: String, context: Context): String {
         }
     }
 
-    return "$cloudName;\n$type;\n$description;\n$weather_prediction;\n$weather_description;\n$image_path"
+//    return "$type;\n$description;\n$weather_prediction;\n$weather_description;\n$image_path"
+    return weather_description
 }
 
 fun loadJSONFromAsset(context: Context, fileName: String): String? {
