@@ -2,9 +2,9 @@ package app.cloudy.screens
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.net.Uri
-import android.provider.MediaStore
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,13 +14,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.cloudy.Screens
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import org.pytorch.IValue
@@ -29,10 +32,8 @@ import org.pytorch.Tensor
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
 import java.io.InputStreamReader
 import java.nio.FloatBuffer
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 
@@ -43,15 +44,21 @@ fun LoadingScreen(
     result: MutableState<String>
 ) {
     val context = LocalContext.current
+    val isLoading = remember { mutableStateOf(true) }
+
     LaunchedEffect(Unit) {
+        isLoading.value = true
         asyncPredict(context, navController, imageUri.value, result)
+        isLoading.value = false
     }
+
+    // UI layout
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly
+        verticalArrangement = Arrangement.Center
     ) {
-        IndeterminateCircularIndicator()
+        CircularProgressIndicator()
     }
 }
 
@@ -59,54 +66,66 @@ suspend fun asyncPredict(
     context: Context,
     navController: NavController,
     imageUri: Uri,
-    result: MutableState<String>,
+    result: MutableState<String>
 ) {
+    withContext(Dispatchers.IO) {
 
-    val date = LocalDateTime.now()
-    val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
-    val model = loadModelFromAssets(context, "model_final.pt")
-
-    // Preprocess the image
-    val tensor = preprocessImage(bitmap)
-
-    // Run the model
-    val outputTensor = model.forward(IValue.from(tensor)).toTensor()
-    val scores = outputTensor.dataAsFloatArray
-
-    val prediction = postprocessOutput(scores)
+        val tensor = preprocessImageUri(context, imageUri)
 
 
-    print(outputTensor)
-    print(scores)
-    val cloudName = prediction
-//    val cloudName = "Stratus"
-    val weatherPrediction = getWeatherPrediction(cloudName, date, context)
+        val model = loadModelFromAssets(context, "model_final.pt")
 
-    delay(2000)
-    result.value = "Recognised cloud is:\n $prediction\n Weather forecast:\n $weatherPrediction"
+        val outputTensor = model.forward(IValue.from(tensor)).toTensor()
+        val scores = outputTensor.dataAsFloatArray
+
+        val prediction = postprocessOutput(scores)
+
+        val weatherPrediction = getWeatherPrediction(prediction, LocalDateTime.now(), context)
+
+        result.value = "Recognised cloud is:\n $prediction\n Weather forecast:\n $weatherPrediction"
+    }
     navController.navigate(Screens.Result.name)
 }
 
-fun preprocessImage(bitmap: Bitmap): Tensor {
-    val width = bitmap.width
-    val height = bitmap.height
-    val floatBuffer = FloatBuffer.allocate(3 * width * height)
+fun preprocessImageUri(context: Context, imageUri: Uri): Tensor {
+    val inputStream = context.contentResolver.openInputStream(imageUri)
+    val originalBitmap = BitmapFactory.decodeStream(inputStream)
+    inputStream?.close()
 
-    val pixels = IntArray(width * height)
-    bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+    val (newWidth, newHeight) = calculateNewDimensions(
+        originalBitmap.width,
+        originalBitmap.height,
+        400
+    )
 
-    for (pixel in pixels) {
-        val r = (pixel shr 16 and 0xFF) / 255.0f
-        val g = (pixel shr 8 and 0xFF) / 255.0f
-        val b = (pixel and 0xFF) / 255.0f
-        floatBuffer.put(r)
-        floatBuffer.put(g)
-        floatBuffer.put(b)
+    val resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true)
+    val bufferSize = 3 * newWidth * newHeight
+    val floatBuffer = FloatBuffer.allocate(bufferSize)
+
+    for (y in 0 until newHeight) {
+        for (x in 0 until newWidth) {
+            val pixel = resizedBitmap.getPixel(x, y)
+            floatBuffer.put(Color.red(pixel) / 255.0f)
+            floatBuffer.put(Color.green(pixel) / 255.0f)
+            floatBuffer.put(Color.blue(pixel) / 255.0f)
+        }
     }
+    floatBuffer.rewind()
 
-    val shape = longArrayOf(1, 3, height.toLong(), width.toLong())
+    val shape = longArrayOf(1, 3, newHeight.toLong(), newWidth.toLong())
     return Tensor.fromBlob(floatBuffer.array(), shape)
 }
+
+fun calculateNewDimensions(width: Int, height: Int, targetSize: Int): Pair<Int, Int> {
+    return if (width < height) {
+        val newHeight = (height * targetSize) / width
+        targetSize to newHeight
+    } else {
+        val newWidth = (width * targetSize) / height
+        newWidth to targetSize
+    }
+}
+
 
 fun postprocessOutput(scores: FloatArray): String {
     val cloudTypes = arrayOf(
@@ -132,7 +151,7 @@ fun postprocessOutput(scores: FloatArray): String {
         }
     }
 
-    var cloudName = cloudTypes[maxIndex%10]
+    var cloudName = cloudTypes[maxIndex % 10]
 
 
     return cloudName
@@ -141,6 +160,7 @@ fun postprocessOutput(scores: FloatArray): String {
 fun loadModelFromAssets(context: Context, modelFilePath: String): Module {
     return Module.load(assetFilePath(context, modelFilePath))
 }
+
 fun assetFilePath(context: Context, assetName: String): String {
     val file = File(context.filesDir, assetName)
     context.assets.open(assetName).use { inputStream ->
@@ -183,11 +203,11 @@ fun getWeatherPrediction(cloudName: String, date: LocalDateTime, context: Contex
 
     val weather_prediction_map: JSONArray = cloudMappingMap["weather_prediction_map"] as JSONArray
     date.monthValue
-    val season: String = if(date.monthValue<5){
+    val season: String = if (date.monthValue < 5) {
         "winter"
-    } else if(date.monthValue<11){
+    } else if (date.monthValue < 11) {
         "summer"
-    } else{
+    } else {
         "winter"
     }
     var weather_prediction = "none"

@@ -150,14 +150,14 @@
       "season": "winter",
       "cloud_id": 6,
       "weather_prediction": "Overcast conditions",
-      "weather_description": "Overcast conditions, usually not usually associated with any significant precipitation.",
+      "weather_description": "Overcast conditions, usually not associated with any significant precipitation.",
       "image_path": "../"
     },
     {
       "season": "summer",
       "cloud_id": 6,
       "weather_prediction": "Overcast conditions",
-      "weather_description": "Overcast conditions, usually not usually associated with any significant precipitation.",
+      "weather_description": "Overcast conditions, usually not associated with any significant precipitation.",
       "image_path": "../"
     },
     {
